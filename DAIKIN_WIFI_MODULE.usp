@@ -1,0 +1,50 @@
+//
+#DEFINE_CONSTANT PORT 80
+#DEFINE_CONSTANT true 1
+#DEFINE_CONSTANT false 0
+#DEFINE_CONSTANT INIZIO1 "GET /aircon/set_control_info?"
+#DEFINE_CONSTANT INIZIO2 "pow="
+#DEFINE_CONSTANT INIZIO3 "&mode="
+#DEFINE_CONSTANT INIZIO4 "&stemp="
+#DEFINE_CONSTANT INIZIO5 "&shum=0"
+#DEFINE_CONSTANT INIZIO6 "&f_rate="
+#DEFINE_CONSTANT INIZIO7 "&f_dir="
+#DEFINE_CONSTANT FINE1 " HTTP/1.0\nHost: "
+#DEFINE_CONSTANT FINE2 "\n\n"
+#DEFINE_CONSTANT DEBUG 1
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#PRINT_TO_TRACE
+
+digital_input _skip_;
+digital_input Imposta;
+digital_input _skip_;
+string_input Power[1];
+string_input Mode[1];
+string_input Temp[2];
+string_input fRate[1];
+string_input fDir[1];
+
+string_output Comando;
+
+string_parameter ip[12];
+#BEGIN_PARAMETER_PROPERTIES ip
+   propValidUnits =  unitString;
+   propDefaultUnit = unitString;
+   propDefaultValue = "xxx.xxx.xxx.xxx";
+   propShortDescription = "Indirizzo IP modulo WiFi Daikin";
+#END_PARAMETER_PROPERTIES
+
+string COMANDO_ON[108];
+
+push Imposta
+{
+    COMANDO_ON = INIZIO1 + INIZIO2 + Power + INIZIO3 + Mode + INIZIO4 + Temp + INIZIO5 + INIZIO6 + fRate + INIZIO7 + fDir + FINE1 + ip + FINE2;
+	Comando = COMANDO_ON;
+}
+
+function main()
+{
+    waitForInitializationComplete();
+}

@@ -1,0 +1,66 @@
+#DEFINE_CONSTANT RICHIESTA_IN "GET /aircon/get_sensor_info HTTP/1.0\nHost: "
+#DEFINE_CONSTANT RICHIESTA_FIN "\n\n"
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#ENCODING_ASCII
+
+digital_input _skip_;
+digital_input _skip_;
+digital_input Enable;
+digital_input Richiedi;
+string_input RAW_HTTP[255];
+
+digital_output _skip_;
+string_output Interna;
+string_output Esterna;
+string_output GET_HTTP;
+
+string_parameter ip[12];
+#BEGIN_PARAMETER_PROPERTIES ip
+   propValidUnits =  unitString;
+   propDefaultUnit = unitString;
+   propDefaultValue = "xxx.xxx.xxx.xxx";
+   propShortDescription = "Indirizzo IP modulo WiFi Daikin";
+#END_PARAMETER_PROPERTIES
+
+INTEGER TrovaInt1;
+INTEGER TrovaInt2;
+INTEGER TrovaEst1;
+INTEGER TrovaEst2;
+
+change RAW_HTTP
+{
+If(Enable = on)
+	{
+		TrovaInt1 = FIND( "htemp=", RAW_HTTP, 1 );
+		If(TrovaInt1 > 0)
+			{
+				TrovaInt1 = TrovaInt1 + 6;
+				TrovaInt2 = FIND( ".", RAW_HTTP, TrovaInt1 );
+				If(TrovaInt2 > 0)
+					{
+						Interna = MID( RAW_HTTP, TrovaInt1, TrovaInt2 - TrovaInt1 );	
+					}
+			}
+		TrovaEst1 = FIND( "otemp=", RAW_HTTP, 1 );
+		If(TrovaEst1 > 0)
+			{
+				TrovaEst1 = TrovaEst1 + 6;
+				TrovaEst2 = FIND( ".", RAW_HTTP, TrovaEst1 );
+				If(TrovaEst2 > 0)
+					{
+						Esterna = MID( RAW_HTTP, TrovaEst1, TrovaEst2 - TrovaEst1 );	
+					}
+			}
+	}
+}
+push Richiedi
+{	
+	GET_HTTP = RICHIESTA_IN + ip + RICHIESTA_FIN;
+}
+
+function main()
+{
+    waitForInitializationComplete();
+}

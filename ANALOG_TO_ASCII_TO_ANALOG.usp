@@ -1,0 +1,21 @@
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#ENCODING_ASCII
+#SYMBOL_NAME "Int to String String to Int"
+
+analog_input A;
+string_input S[254];
+
+analog_output AO;
+string_output SO;
+
+change A
+{
+	SO = ITOA(A);
+}
+
+change S
+{
+	AO = ATOI(S);
+}

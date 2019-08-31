@@ -1,0 +1,107 @@
+#DEFINE_CONSTANT RICHIESTA_IN "GET /aircon/get_control_info HTTP/1.0\nHost: "
+#DEFINE_CONSTANT RICHIESTA_FIN "\n\n"
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#ENCODING_ASCII
+
+digital_input _skip_;
+digital_input _skip_;
+digital_input Enable;
+digital_input Richiedi;
+string_input RAW_HTTP[400];
+
+digital_output _skip_;
+string_output Power;
+string_output Vel;
+string_output Dir;
+string_output Mode;
+analog_output Temp;
+string_output GET_HTTP;
+
+string_parameter ip[12];
+#BEGIN_PARAMETER_PROPERTIES ip
+   propValidUnits =  unitString;
+   propDefaultUnit = unitString;
+   propDefaultValue = "xxx.xxx.xxx.xxx";
+   propShortDescription = "Indirizzo IP modulo WiFi Daikin";
+#END_PARAMETER_PROPERTIES
+
+INTEGER TrovaPow1;
+INTEGER TrovaPow2;
+INTEGER TrovaTemp1;
+INTEGER TrovaTemp2;
+INTEGER TrovaMode1;
+INTEGER TrovaMode2;
+INTEGER TrovaRate1;
+INTEGER TrovaRate2;
+INTEGER TrovaDir1;
+INTEGER TrovaDir2;
+STRING tTEMP[2];
+
+change RAW_HTTP
+{
+If(Enable = on)
+	{
+		TrovaPow1 = FIND( "pow=", RAW_HTTP, 1 );
+		If(TrovaPow1 > 0)
+			{
+				TrovaPow1 = TrovaPow1 + 4;
+				TrovaPow2 = FIND( ",", RAW_HTTP, TrovaPow1 );
+				If(TrovaPow2 > 0)
+					{
+						Power = MID( RAW_HTTP, TrovaPow1, TrovaPow2 - TrovaPow1 );	
+					}
+			}
+		TrovaTemp1 = FIND( "stemp=", RAW_HTTP, 1 );
+		If(TrovaTemp1 > 0)
+			{
+				TrovaTemp1 = TrovaTemp1 + 6;
+				TrovaTemp2 = FIND( ".", RAW_HTTP, TrovaTemp1 );
+				If(TrovaTemp2 > 0)
+					{
+						tTEMP = MID( RAW_HTTP, TrovaTemp1, TrovaTemp2 - TrovaTemp1 );
+						Temp = ATOSI(tTEMP);	
+					}
+			}
+		TrovaMode1 = FIND( "mode=", RAW_HTTP, 1 );
+		If(TrovaMode1 > 0)
+			{
+				TrovaMode1 = TrovaMode1 + 5;
+				TrovaMode2 = FIND( ",", RAW_HTTP, TrovaMode1 );
+				If(TrovaMode2 > 0)
+					{
+						Mode = MID( RAW_HTTP, TrovaMode1, TrovaMode2 - TrovaMode1 );	
+					}
+			}
+		TrovaRate1 = FIND( "f_rate=", RAW_HTTP, 1 );
+		If(TrovaRate1 > 0)
+			{
+				TrovaRate1 = TrovaRate1 + 7;
+				TrovaRate2 = FIND( ",", RAW_HTTP, TrovaRate1 );
+				If(TrovaRate2 > 0)
+					{
+						Vel = MID( RAW_HTTP, TrovaRate1, TrovaRate2 - TrovaRate1 );	
+					}
+			}
+		TrovaDir1 = FIND( "f_dir=", RAW_HTTP, 1 );
+		If(TrovaDir1 > 0)
+			{
+				TrovaDir1 = TrovaDir1 + 6;
+				TrovaDir2 = FIND( ",", RAW_HTTP, TrovaDir1 );
+				If(TrovaDir2 > 0)
+					{
+						Dir = MID( RAW_HTTP, TrovaDir1, TrovaDir2 - TrovaDir1 );	
+					}
+			}
+	}
+}
+push Richiedi
+{	
+	GET_HTTP = RICHIESTA_IN + ip + RICHIESTA_FIN;
+}
+
+function main()
+{
+    waitForInitializationComplete();
+}
